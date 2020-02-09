@@ -8,6 +8,7 @@ export interface MapLocation {
     temperature: number;
     flux: number;
     flow: MapLocation;
+    attributes: Map<string, boolean>;
 
     serializeKey():string;
 }
@@ -24,13 +25,16 @@ export class MapRegion implements MapLocation {
 
     // details
     pos: [number, number];
-    height: number;
+    height = 0;
     precipitation: number;
     temperature: number;
 
     // erosion
     flux: number;
     flow: MapLocation;
+
+    // attributes
+    attributes: Map<string, boolean> = new Map<string, boolean>();
 
     constructor(pos:[number,number]) {
         this.pos = pos;
@@ -66,13 +70,16 @@ export class MapPoint implements MapLocation {
 
     // details
     pos: [number, number];
-    height: number;
+    height = 0;
     precipitation: number;
     temperature: number;
 
     // erosion
     flux: number;
     flow: MapLocation;
+
+    // attributes
+    attributes: Map<string, boolean> = new Map<string, boolean>();
 
     constructor(pos:[number,number]) {
         this.pos = pos;
@@ -116,8 +123,7 @@ export class MapBorder {
     }
 
     serializeKey():string {
-        return "[" + this.edge.va.x.toString() + "," +this.edge.va.y.toString() +"]"
-             + "[" + this.edge.vb.x.toString() + "," +this.edge.vb.y.toString() +"]";
+        return "[" + this.edge.va.x.toString() + "," +this.edge.va.y.toString() +"]" + "[" + this.edge.vb.x.toString() + "," +this.edge.vb.y.toString() +"]";
     }
 
     addPoint(point:MapPoint):void {
@@ -130,6 +136,26 @@ export class MapBorder {
 
     addRegion(region:MapRegion):void {
         if (!this.regions.includes(region)) this.regions.push(region);
+    }
+
+    findCoastStart():MapBorder|null {
+        const visited:Map<string, boolean> = new Map<string, boolean>();
+
+        const queue: Array<MapBorder> = [this];
+        let prev:MapBorder|null = null;
+        while(queue.length) {
+            const cur = queue.pop();
+            if (!cur) break;
+            if (!visited.has(cur.serializeKey())) {
+                visited.set(cur.serializeKey(), true);
+                if (!cur.coast) return prev;
+
+                prev = cur;
+                queue.push(...cur.neighbors);
+            }
+        }
+
+        return prev;
     }
 }
 

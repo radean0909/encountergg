@@ -22,6 +22,11 @@ export class Main {
 
     private startLoadingAssets(): void {
         const map = new EncounterMap(800, 600, 10);
+
+        map.addHill([400, 300], 50, 5);
+        map.addHill([500, 250], 50, 5);
+        map.setLandAndSea(EncounterMap.SEALEVEL);
+        const coasts = map.getCoastLines();
     }
 
     private onAssetsLoaded(): void {
